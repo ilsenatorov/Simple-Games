@@ -6,8 +6,8 @@ so I can add recursion
 import random
 
 print("Welcome to the game of Bulls and Cows!")
-print("In order to win you need to guess a number, digits do not repeat. Whenever you make a guess you receive hints - Bulls and Cows.")
-print("A bull means that you guessed a digit and a place correctly. A cow means that you guessed a digit, but not the place.")
+print("In order to win you need to guess a number, digits do not repeat.\nWhenever you make a guess you receive hints - Bulls and Cows.")
+print("A Bull means that you guessed a digit and a place correctly.\nA Cow means that you guessed a digit, but not the place.")
 print()
 
 def game():
@@ -76,7 +76,7 @@ def game():
         Guess = input("Please make a guess:") #takes user input
         if HasRepeats(Guess): #check for repeats
           print("Your guess contains repeat digits!")
-          print("You have " + TriesLeft + "Tries left!")
+          print("You have " + str(TriesLeft) + " Tries left!")
           PlayTheGame(TriesLeft)
         elif len(Guess) > NumLength: #check for correct length
           print("Your guess has more digits than the number I guessed!")
@@ -84,7 +84,7 @@ def game():
           PlayTheGame(TriesLeft)
         elif len(Guess) < NumLength: #check for correct length
           print("Your guess has less digits than the number I guessed!")
-          print("You have ", TriesLeft, "Tries left!")
+          print("You have ", str(TriesLeft), "Tries left!")
           PlayTheGame(TriesLeft)
         for q in Guess: #turns the Guess into a list
           Guesslist.append(int(q))
