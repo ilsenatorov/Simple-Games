@@ -14,7 +14,7 @@ word_list = []
 for letter in the_word:
     word_list.append(letter)
 
-Tries = 10
+Tries = 7
 
 def show_state():
     for letter in word_list:
@@ -22,8 +22,8 @@ def show_state():
             print('_ ', end='')
         elif letter in list_of_guesses:
             print(letter + " ", end='')
-    print('\n' + "".join(word_list))
-    print("Letters not in: " + " ".join(list_not_in))
+    # print('\n' + "".join(word_list))
+    print("\nLetters not in: " + " ".join(list_not_in))
 
 def MakeGuess(word):
     Guess = input("Guess a letter: ")
