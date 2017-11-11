@@ -92,7 +92,7 @@ def game():
         print ("Number of Cows:", CheckCows(Guesslist) - CheckBulls(Guesslist)) #tells number of Cows
         if Guesslist == MyNum: #checks for win condition
           print("You Won!")
-          break
+          return
         TriesLeft -= 1
         print("You have ", TriesLeft, "Tries left!")
 
