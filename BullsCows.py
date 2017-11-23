@@ -1,107 +1,89 @@
 #!/usr/bin/python3
-'''
-add the replay feature, with choosing difficulty. Need to turn the whole game into a function,
-so I can add recursion
-'''
+
 import random
+import argparse
 
-print("Welcome to the game of Bulls and Cows!")
-print("In order to win you need to guess a number, digits do not repeat.\nWhenever you make a guess you receive hints - Bulls and Cows.")
-print("A Bull means that you guessed a digit and a place correctly.\nA Cow means that you guessed a digit, but not the place.")
-print()
+import argparse
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument("-l", help="choose the length of the number", type=int)
+parser.add_argument("-t", help="choose the number of tries", type=int)
+parser.add_argument("-d", help="show answer for debug", action="store_true")
+args = parser.parse_args()
 
-def game():
-    difficulty = input("Type easy, medium or hard to choose the difficulty: ") #allows player to choose the difficulty
-    if difficulty == "easy" or difficulty == "Easy":
-      print("Your number contains 3 digits")
-      NumLength = 3
-      Tries = 8
-    elif difficulty == "medium" or difficulty == "Medium":
-      print("Your number contains 4 digits")
-      Tries = 7
-      NumLength = 4
-    elif difficulty == "hard" or difficulty == "Hard":
-      print("Your number contains 5 digits")
-      NumLength = 5
-      Tries = 10
-    elif difficulty == "Insane" or difficulty == "insane":
-      NumLength = 6
-      Tries = 15
-      print("Wow you are insane!")
-      print("Your number contains 6 digits")
-    elif difficulty == "debug":#DEBUGGING MODE
-      NumLength = 3
-      Tries = 3
-    else:
-      print("You chose the deafult difficulty - medium. Your number contains 4 digits")
-      Tries = 7
-      NumLength = 4
 
-    MyNum = random.sample(range(9), NumLength)#creates the number to guess
-    MyNumList = []
-    for c in MyNum:#turns the number to be guessed into a readable form to print in the end
-      MyNumList.append(str(c))
+class Guess(object):
+    def __init__(self, guess):
+        self.guess = guess
+    def HasRepeats(self):
+        return len(self.guess) != len(set(self.guess))
+    def CheckLength(self, num):
+        return len(self.guess) != len(num)
+    def CheckLonger(self, num):
+        return len(self.guess) > len(num)
+    def CheckShorter(self, num):
+        return len(self.guess) < len(num)
+    def CheckProblems(self, num):
+        if self.HasRepeats():
+            print("Your guess contains repeats!")
+            return True
+        elif self.CheckLonger(num):
+            print("Your guess is too long")
+            return True
+        elif self.CheckShorter(num):
+            print("Your guess is too short")
+            return True
+        else:
+            return False
+    def CheckCows(self, num):
+        Cows = 0
+        for c in self.guess:
+            if c in num:
+                Cows += 1
+        return Cows - self.CheckBulls(num)
+    def CheckBulls(self, num):
+        Bulls = 0
+        integer = 0
+        for c in self.guess:
+            if c == num[integer]:
+                Bulls += 1
+            integer += 1
+        return Bulls
+    def CheckWin(self, num):
+        return self.guess == num
 
-    if difficulty == "debug": #DEBUGGING FEATURE
-      print("".join(MyNumList))
+def game(NumLength, Tries):
+    print("Welcome to the game of Bulls and Cows!")
+    print("In order to win you need to guess a number, digits do not repeat.\nWhenever you make a guess you receive hints - Bulls and Cows.")
+    print("A Bull means that you guessed a digit and a place correctly.\nA Cow means that you guessed a digit, but not the place.")
+    print("Type the command with -h at the end to see help")
+    numblist = random.sample(range(9), NumLength)
+    numlist = []
+    for numb in numblist:
+        numlist.append(str(numb))
+    num = "".join(numlist)
+    while Tries > 0:
+        if args.d:
+            print(num)
+        print("Tries left: " + str(Tries))
+        guess = Guess(str(input("Please enter your guess: ")))
+        # print(guess.CheckProblems(num))
+        if guess.CheckProblems(num) is True:
+            print("issue found")
+        elif guess.CheckWin(num):
+            print("You Won!")
+            return
+        else:
+            print("Bulls: " + str(guess.CheckBulls(num)))
+            print("Cows: " + str(guess.CheckCows(num)))
+            Tries -= 1
+    print("The number was: " + num)
+if args.l is None:
+    leng = 4
+else:
+    leng = args.l
+if args.t is None:
+    tries = 7
+else:
+    tries = args.t
 
-    def CheckBulls(TheGuess): #checks for presence of Bulls in the number
-      Bulls = 0
-      integer = 0
-      for c in TheGuess:
-        if c == MyNum[integer]:
-          Bulls += 1
-        integer += 1
-      return Bulls
-
-    def CheckCows(TheGuess): #checks for presence of cows including bulls in the number
-      Cows = 0
-      for c in TheGuess:
-        if c in MyNum:
-          Cows += 1
-      return Cows
-
-    def HasRepeats(Number): #Checks if integer has any repeated digits.
-      digits = Number
-      return len(digits) != len(set(digits))
-
-    Guesslist = []
-
-    def PlayTheGame(TriesLeft): #defines the function that starts the game
-      while TriesLeft >= 0:
-        Guesslist = []
-        if TriesLeft == 0: #checks lose condition, breaks the loop and prints the right answer
-          print("You are out of tries! The number you were trying to guess was:" + "".join(MyNumList))
-          break
-        Guess = input("Please make a guess:") #takes user input
-        if HasRepeats(Guess): #check for repeats
-          print("Your guess contains repeat digits!")
-          print("You have " + str(TriesLeft) + " Tries left!")
-          PlayTheGame(TriesLeft)
-        elif len(Guess) > NumLength: #check for correct length
-          print("Your guess has more digits than the number I guessed!")
-          print("You have ", TriesLeft, "Tries left!")
-          PlayTheGame(TriesLeft)
-        elif len(Guess) < NumLength: #check for correct length
-          print("Your guess has less digits than the number I guessed!")
-          print("You have ", str(TriesLeft), "Tries left!")
-          PlayTheGame(TriesLeft)
-        for q in Guess: #turns the Guess into a list
-          Guesslist.append(int(q))
-        print("Number of Bulls:" + str(CheckBulls(Guesslist))) #tells number of Bulls
-        print ("Number of Cows:", CheckCows(Guesslist) - CheckBulls(Guesslist)) #tells number of Cows
-        if Guesslist == MyNum: #checks for win condition
-          print("You Won!")
-          return
-        TriesLeft -= 1
-        print("You have ", TriesLeft, "Tries left!")
-
-    PlayTheGame(Tries)
-    print('Thanks for playing!')
-    if_replay = input('If you want to play again, type "y". Type anything else if you don\'t: ')
-    if if_replay == 'y':
-        game()
-    else:
-        print('See you next time')
-        return
-game()
+game(leng, tries)
