@@ -1,65 +1,99 @@
 #!/usr/bin/python3
-
-### game of hangman
 from random import randrange
-txt_location = '/home/ilya/Projects/Simple-Games/word_rus.txt'
-list_of_guesses = []
+import argparse
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument("-ru", help="Russian", action='store_true')
+parser.add_argument("-en", help="English", action='store_true')
+parser.add_argument("-d", help="Print Answer for Debug", action='store_true')
+parser.add_argument("-t", help="choose the number of tries", type=int)
+
+
+args = parser.parse_args()
+
+if args.ru:
+    txt_location = '/home/ilya/Projects/Simple-Games/word_rus.txt'
+elif args.en:
+    txt_location = '/home/ilya/Projects/Simple-Games/word_en.txt'
+else:
+    txt_location = '/home/ilya/Projects/Simple-Games/word_rus.txt'
+
+list_in = []
 list_not_in = []
 
-txt = open(txt_location).readlines()
-the_word = txt[randrange(len(txt))]
-the_word = the_word[:-1]
-
-word_list = []
-for letter in the_word:
-    word_list.append(letter)
-
-Tries = 7
-
-def show_state():
-    for letter in word_list:
-        if letter not in list_of_guesses:
-            print('_ ', end='')
-        elif letter in list_of_guesses:
-            print(letter + " ", end='')
-    # print('\n' + "".join(word_list))
-    print("\nLetters not in: " + " ".join(list_not_in))
-
-def MakeGuess(word):
-    Guess = input("Guess a letter: ")
-    if len(Guess) !=1:
-        print("This guess is too long")
-        return False
-    elif Guess in list_of_guesses or Guess in list_not_in:
-        print("You already guessed this letter")
-        return False
-    elif Guess not in word:
-        print("This letter is not in the word")
-        list_not_in.append(Guess)
-        return True
-    elif Guess in word:
-        print("Correct guess")
-        list_of_guesses.append(Guess)
-        return False
-    else:
-        print("Unknown error")
-        return False
-
-def CheckWin():
-    for letter in word_list:
-        if letter not in list_of_guesses:
+class Guess(object): #this is a letter that person guessed
+    def __init__(self, guess):
+        self.guess = guess
+    def CheckLen(self):
+        if len(self.guess) == 1:
+            return True
+        else:
+            print("This is more than one letter!")
             return False
-    return True
 
-def PlayGame(TriesLeft, word):
-    print("Welcome to the game of Hangman!")
-    show_state()
-    while TriesLeft >= 0:
-        if CheckWin():
-            print("You won!")
-            return
-        elif MakeGuess(word):
-            TriesLeft -= 1
-        show_state()
-        print("Tries left: " + str(TriesLeft))
-PlayGame(Tries, word_list)
+    def CheckAlreadyTried(self):
+        if self.guess in list_in or self.guess in list_not_in:
+            return False
+            print("You have already tried this letter!")
+        else:
+            return True
+
+    def CheckIssues(self):
+        return self.CheckLen() and self.CheckAlreadyTried
+
+    def CheckIn(self, word):
+        if self.guess in word:
+            print("Correct guess!")
+            list_in.append(self.guess)
+            return True
+        else:
+            print("This letter is not in the word")
+            list_not_in.append(self.guess)
+            return False
+
+
+
+
+    def CheckWin(self, word):
+        for letter in word:
+            if letter not in list_in:
+                return False
+        return True
+
+
+def print_state(word):
+    for letter in word:
+        if letter not in list_in:
+            print('_ ', end='')
+        elif letter in list_in:
+            print(letter + " ", end='')
+    print("\nLetters not in: " + " ".join(list_not_in))
+    # print(list_in)
+    if args.d:
+        print(word)
+
+txt = open(txt_location, 'r').readlines()
+word = txt[randrange(len(txt))]
+word = word[:-1]
+if args.t is None:
+    _Tries = 7
+else:
+    _Tries = args.t
+def PlayGame(the_word, Tries):
+    while True:
+        print_state(the_word)
+        guess = Guess(input("Type in: "))
+        if not guess.CheckIssues():
+            continue
+        if guess.CheckIn(the_word):
+            pass
+        else:
+            Tries -= 1
+        if guess.CheckWin(the_word):
+            print("You Won!")
+            break
+        if Tries == 0:
+            print("You ran out of Tries! The Word you were trying to guess was:\n" + the_word)
+            break
+        print("Tries Left: " + str(Tries))
+PlayGame(word, _Tries)
